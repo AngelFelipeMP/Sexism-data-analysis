@@ -1,7 +1,7 @@
 #!/bin/sh
 
-ebs_path="/dev/nvme2n1"
-ssd_path="/dev/nvme1n1"
+ebs_path="/dev/nvme1n1"
+ssd_path="/dev/nvme2n1"
 
 df -h
 echo " "

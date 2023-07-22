@@ -1,6 +1,6 @@
 #!/bin/sh
 
-ebs_path="/dev/nvme2n1"
+ebs_path="/dev/nvme1n1"
 
 # S3-bucket
 sudo apt update -y
