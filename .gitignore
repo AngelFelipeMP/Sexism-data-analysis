@@ -1,3 +1,8 @@
+s3-bucket/
+ebs-volume/
+ssd-volume/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
