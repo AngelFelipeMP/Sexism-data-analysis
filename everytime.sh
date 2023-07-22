@@ -22,3 +22,5 @@ sudo chown ubuntu:ubuntu ssd-volume
 
 echo " "
 df -h
+
+source activate pytorch
