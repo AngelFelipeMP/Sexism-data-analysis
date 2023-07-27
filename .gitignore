@@ -1,6 +1,7 @@
 s3-bucket/
 ebs-volume/
 ssd-volume/
+data/
 
 
 # Byte-compiled / optimized / DLL files

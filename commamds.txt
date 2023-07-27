@@ -1,7 +1,0 @@
-unzip s3-bucket/llama-7B.zip -d ssd-volume/
-
-# https://github.com/huggingface/transformers/blob/main/src/transformers/models/llama/convert_llama_weights_to_hf.py
-
-
-torchrun --nproc_per_node 1 Lin_script.py --ckpt_dir /home/ubuntu/LLaMA-QA-Rephrase/ssd-volume/llama-7B/7B/  
---tokenizer_path /home/ubuntu/LLaMA-QA-Rephrase/ssd-volume/llama-7B/tokenizer.model --max_seq_len 512  --max_batch_size 4
