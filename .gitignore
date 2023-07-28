@@ -3,7 +3,7 @@ ebs-volume/
 ssd-volume/
 data/
 yes/
-EXIST-2023/
+EXIST2023/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
