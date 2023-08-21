@@ -1,0 +1,57 @@
+{
+    "whole_data": {
+        "gold_label": {
+            "NO": 3846,
+            "-": 1621,
+            "DIRECT": 1498,
+            "REPORTED": 534,
+            "JUDGEMENTAL": 459
+        },
+        "LWD": {
+            "UNKNOWN": 82,
+            "DIRECT": 10382,
+            "-": 25997,
+            "REPORTED": 5409,
+            "JUDGEMENTAL": 5878
+        }
+    },
+    "gender": {
+        "F": {
+            "UNKNOWN": 26,
+            "DIRECT": 5320,
+            "-": 12913,
+            "REPORTED": 2753,
+            "JUDGEMENTAL": 2862
+        },
+        "M": {
+            "UNKNOWN": 56,
+            "DIRECT": 5062,
+            "-": 13084,
+            "REPORTED": 2656,
+            "JUDGEMENTAL": 3016
+        }
+    },
+    "age": {
+        "23-45": {
+            "UNKNOWN": 18,
+            "DIRECT": 3494,
+            "-": 8494,
+            "REPORTED": 1848,
+            "JUDGEMENTAL": 2062
+        },
+        "18-22": {
+            "UNKNOWN": 33,
+            "DIRECT": 3366,
+            "-": 8983,
+            "REPORTED": 1701,
+            "JUDGEMENTAL": 1833
+        },
+        "46+": {
+            "UNKNOWN": 31,
+            "DIRECT": 3522,
+            "-": 8520,
+            "REPORTED": 1860,
+            "JUDGEMENTAL": 1983
+        }
+    }
+}

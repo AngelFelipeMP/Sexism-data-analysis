@@ -1,0 +1,48 @@
+{
+    "F": {
+        "23-45": {
+            "UNKNOWN": 9,
+            "DIRECT": 1766,
+            "-": 4250,
+            "REPORTED": 974,
+            "JUDGEMENTAL": 959
+        },
+        "18-22": {
+            "UNKNOWN": 7,
+            "DIRECT": 1707,
+            "-": 4471,
+            "REPORTED": 875,
+            "JUDGEMENTAL": 898
+        },
+        "46+": {
+            "UNKNOWN": 10,
+            "DIRECT": 1847,
+            "-": 4192,
+            "REPORTED": 904,
+            "JUDGEMENTAL": 1005
+        }
+    },
+    "M": {
+        "23-45": {
+            "UNKNOWN": 9,
+            "DIRECT": 1728,
+            "-": 4244,
+            "REPORTED": 874,
+            "JUDGEMENTAL": 1103
+        },
+        "18-22": {
+            "UNKNOWN": 26,
+            "DIRECT": 1659,
+            "-": 4512,
+            "REPORTED": 826,
+            "JUDGEMENTAL": 935
+        },
+        "46+": {
+            "UNKNOWN": 21,
+            "DIRECT": 1675,
+            "-": 4328,
+            "REPORTED": 956,
+            "JUDGEMENTAL": 978
+        }
+    }
+}

@@ -1,0 +1,60 @@
+{
+    "F": {
+        "23-45": {
+            "STEREOTYPING-DOMINANCE": 1266,
+            "IDEOLOGICAL-INEQUALITY": 1143,
+            "SEXUAL-VIOLENCE": 682,
+            "UNKNOWN": 38,
+            "MISOGYNY-NON-SEXUAL-VIOLENCE": 900,
+            "OBJECTIFICATION": 1041,
+            "-": 4250
+        },
+        "18-22": {
+            "STEREOTYPING-DOMINANCE": 1338,
+            "IDEOLOGICAL-INEQUALITY": 1132,
+            "SEXUAL-VIOLENCE": 671,
+            "UNKNOWN": 7,
+            "MISOGYNY-NON-SEXUAL-VIOLENCE": 901,
+            "OBJECTIFICATION": 1067,
+            "-": 4471
+        },
+        "46+": {
+            "STEREOTYPING-DOMINANCE": 1258,
+            "IDEOLOGICAL-INEQUALITY": 1059,
+            "SEXUAL-VIOLENCE": 630,
+            "UNKNOWN": 49,
+            "MISOGYNY-NON-SEXUAL-VIOLENCE": 718,
+            "OBJECTIFICATION": 1014,
+            "-": 4192
+        }
+    },
+    "M": {
+        "23-45": {
+            "STEREOTYPING-DOMINANCE": 1427,
+            "IDEOLOGICAL-INEQUALITY": 1286,
+            "SEXUAL-VIOLENCE": 674,
+            "UNKNOWN": 37,
+            "MISOGYNY-NON-SEXUAL-VIOLENCE": 829,
+            "OBJECTIFICATION": 1085,
+            "-": 4244
+        },
+        "18-22": {
+            "STEREOTYPING-DOMINANCE": 1181,
+            "IDEOLOGICAL-INEQUALITY": 1119,
+            "SEXUAL-VIOLENCE": 629,
+            "UNKNOWN": 44,
+            "MISOGYNY-NON-SEXUAL-VIOLENCE": 895,
+            "OBJECTIFICATION": 991,
+            "-": 4512
+        },
+        "46+": {
+            "STEREOTYPING-DOMINANCE": 1389,
+            "IDEOLOGICAL-INEQUALITY": 1101,
+            "SEXUAL-VIOLENCE": 586,
+            "UNKNOWN": 52,
+            "MISOGYNY-NON-SEXUAL-VIOLENCE": 657,
+            "OBJECTIFICATION": 878,
+            "-": 4328
+        }
+    }
+}

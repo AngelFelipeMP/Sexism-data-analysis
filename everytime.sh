@@ -24,4 +24,4 @@ s3fs angel-ec2-bucket s3-bucket -o iam_role=auto
 # df -h
 
 # source activate pytorch
-conda activate data_exploration
+# conda activate data_exploration
