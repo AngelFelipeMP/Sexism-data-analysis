@@ -4,42 +4,31 @@ from scipy.stats import f_oneway, ttest_ind, tukey_hsd
 import numpy as np
 from data_exploration import DataExploration
 import matplotlib.pyplot as plt
-import ast
 
 class DataStatistics(DataExploration):
     def __init__(self, data_path, file_name, analyses_path):
         super().__init__(data_path, file_name, analyses_path)
         self.num_annotators = {'gender':3, 'age':2, 'gender_age':1}
         
-    def columns_by_class(self):
-        for (prefix, categoty) in [('labels_task2', self.possible_labels_task2), ('labels_task3', self.possible_labels_task3)]:
-            for label in categoty:
-                if 'task2' in prefix:
-                    self.df[prefix + '_' + label] = self.df[prefix].apply(lambda x: ['YES' if label == l else 'NO' for l in ast.literal_eval(x)])
-                else:
-                    self.df[prefix + '_' + label] = self.df[prefix].apply(lambda x: ['YES' if label in l else 'NO' for l in ast.literal_eval(x)])
-    
     def average_last_n_values(self, dict_scores, n):
         for key in dict_scores.keys():
             dict_scores[key] = dict_scores[key][:-n] + [sum(dict_scores[key][-n:]) / len(dict_scores[key][-n:])]  
         return dict_scores
     
-    def mean_distributions(self):
-        for labels_task_n in  [self.labels_task1, self.labels_task2, self.labels_task3]:
-        
-            anotations = {}
-            anotations['gender'] = {g:[] for g in ['F', 'M']}
-            anotations['age'] = {a:[] for a in self.age_groups}
-            anotations['gender_age'] = {g + '_' + a:[] for g in ['F', 'M'] for a in self.age_groups}
-        
-            for set_gender, set_age, set_annotation in zip(self.gender_annotetors, self.age_annotetors, labels_task_n):
-                for gender, age, annotation in zip(set_gender, set_age, set_annotation):
-                    anotations['gender'][gender].append(1 if annotation=='YES' else 0)
-                    anotations['age'][age].append(1 if annotation=='YES' else 0)
-                    anotations['gender_age'][gender + '_' + age].append(1 if annotation=='YES' else 0)
-                        
-                for set_annotation in anotations.keys():
-                    anotations[set_annotation] = self.average_last_n_values(anotations[set_annotation], self.num_annotators[set_annotation])
+    def mean_distribution_task1(self):
+        anotations = {}
+        anotations['gender'] = {g:[] for g in ['F', 'M']}
+        anotations['age'] = {a:[] for a in self.age_groups}
+        anotations['gender_age'] = {g + '_' + a:[] for g in ['F', 'M'] for a in self.age_groups}
+    
+        for set_gender, set_age, set_annotation in zip(self.gender_annotetors, self.age_annotetors, self.labels_task1):
+            for gender, age, annotation in zip(set_gender, set_age, set_annotation):
+                anotations['gender'][gender].append(1 if annotation=='YES' else 0)
+                anotations['age'][age].append(1 if annotation=='YES' else 0)
+                anotations['gender_age'][gender + '_' + age].append(1 if annotation=='YES' else 0)
+                    
+            for set_annotation in anotations.keys():
+                anotations[set_annotation] = self.average_last_n_values(anotations[set_annotation], self.num_annotators[set_annotation])
                 
         return anotations
     
@@ -115,9 +104,6 @@ def box_plot(group, scores, classes, path):
 if __name__ == "__main__":
     # Global distribution of the data
     data_exploration = DataStatistics(DATA_PATH, 'EXIST2023_training-dev.csv', ANALYSES_PATH)
-    data_exploration.columns_by_class()
-    exit()
-    
     anotations = data_exploration.mean_distribution_task1()
     # plot(anotations, ANALYSES_PATH)
     data_exploration.mean_value()
