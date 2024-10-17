@@ -36,7 +36,7 @@ def merge_data_labels(package_path, label_gold_path, data_path, dataset):
                 df_label.rename(columns={type_label + "_label": type_label + '_label' + '_' + task }, inplace=True)
             
                 df_partition = pd.concat([df_partition, df_label], axis=1)
-                df_partition[type_label + '_label' + '_' + task ].fillna(fill_nan, inplace=True)
+                df_partition.fillna({type_label + '_label' + '_' + task:fill_nan}, inplace=True)
             
         path_csv = data_path + '/' + dataset + '_' + partition + '.csv'
         df_partition.to_csv(path_csv, index=False)

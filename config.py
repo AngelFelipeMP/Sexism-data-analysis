@@ -8,4 +8,6 @@ LABEL_GOLD_PATH = PACKAGE_PATH + '/evaluation/golds'
 ANALYSES_PATH = REPO_PATH + '/analyzes'
 
 S3_BUCKET = '/s3-bucket'
-PATH_SORCE_PACKAGE = REPO_PATH + S3_BUCKET + '/' + DATA + '_package'
+##Deprecated
+# PATH_SORCE_PACKAGE = REPO_PATH + S3_BUCKET + '/' + DATA + '_package'
+PATH_SORCE_PACKAGE = '/'.join(REPO_PATH.split('/')[:-1]) + '/' + DATA
