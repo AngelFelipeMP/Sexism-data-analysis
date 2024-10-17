@@ -4,6 +4,7 @@ ssd-volume/
 data/
 yes/
 EXIST2023/
+analyzes/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

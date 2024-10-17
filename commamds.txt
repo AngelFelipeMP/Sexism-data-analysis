@@ -1,2 +1,7 @@
-1) copy and past EXIST2023 data insed "Sexism-data-analysis"
+1) copy and past EXIST2023 data outside "Sexism-data-analysis"
 2) rename the directory as EXIST2023
+3) inside "Sexism-data-analysis" create "data" and "analyzes" directory
+4) run the scripts in sequence:
+    - "data_preparation.py"
+    - "data_statistics.py"
+    - "data_exploration.py"
