@@ -5,6 +5,10 @@ import numpy as np
 from data_exploration import DataExploration
 import matplotlib.pyplot as plt
 import ast
+from icecream import ic
+import json
+import krippendorff
+from itertools import combinations_with_replacement
 
 class DataStatistics(DataExploration):
     def __init__(self, data_path, file_name, analyses_path):
@@ -79,6 +83,29 @@ class DataStatistics(DataExploration):
             df = self.array_df(rest.pvalue, dist_group_names, dist_group_names)
             df.to_csv(self.analyses_path + '/tukey_'+ task + '_' + categoty + '_' + group +'.csv', index=True)
             print(df)
+            
+    # self.Krippendorff_alpha(anotations, 'task'+ str(n), label)
+    def Krippendorff_alpha(self, dist_task_n, task, categoty):
+        print('###### Krippendorff alpha ######')
+        
+        for group, labels in dist_task_n.items():
+            print('Group: ', group)
+            
+            dist_group = list(labels.items())
+            dist_group.sort(key=lambda x: x[0])
+            row_columns = [k for k,_ in dist_group]
+            alpha_matrix = pd.DataFrame(index=row_columns, columns=row_columns)
+            level_of_measurement = 'nominal' if len(row_columns) == 6 else 'ratio'
+            
+            for (col1, labels1), (col2, labels2) in combinations_with_replacement(dist_group, 2):
+            
+                alpha_value = krippendorff.alpha([labels1, labels2], level_of_measurement=level_of_measurement)
+                
+                alpha_matrix.at[col1, col2] = alpha_value
+                alpha_matrix.at[col2, col1] = alpha_value  # Symmetric matrix
+            
+            alpha_matrix.to_csv(self.analyses_path + '/Krippendorff-alpha_'+ task + '_' + categoty + '_' + group +'.csv', index=True)
+            print(alpha_matrix)
 
     def t_test(self, labels_task_n):
         print('###### T-test ######')
@@ -105,15 +132,19 @@ class DataStatistics(DataExploration):
                 print('#####################')
                 print('###### Class: ' + label)
                 print('#####################')
-                print('\n')  
+                print('\n')
                 self.t_test(anotations)
                 print('\n') 
                 self.anova_test(anotations)
                 print('\n') 
                 self.tukey_hsd_test(anotations, 'task'+ str(n), label)
-                print('\n') 
+                print('\n')
+                self.Krippendorff_alpha(anotations, 'task'+ str(n), label)
+                print('\n')
                 self.mean_value(anotations, 'task'+ str(n), label)
-    
+                
+                
+                
 if __name__ == "__main__":
     # Global distribution of the data
     data_exploration = DataStatistics(DATA_PATH, 'EXIST2023_training-dev.csv', ANALYSES_PATH)
