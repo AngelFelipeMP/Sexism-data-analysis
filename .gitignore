@@ -5,6 +5,7 @@ data/
 yes/
 EXIST2023/
 analyzes/
+predictions/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
