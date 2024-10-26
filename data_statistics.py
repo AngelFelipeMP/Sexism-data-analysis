@@ -1,4 +1,5 @@
 import pandas as pd
+import glob
 from config import *
 from scipy.stats import f_oneway, ttest_ind, tukey_hsd
 import numpy as np
@@ -32,7 +33,7 @@ class DataStatistics(DataExploration):
     
     def mean_distributions(self, labels_task_n):
         anotations = {}
-        anotations['gender'] = {g:[] for g in ['F', 'M']}
+        anotations['gender'] = {g:[] for g in ['F', 'M']} 
         anotations['age'] = {a:[] for a in self.age_groups}
         anotations['gender_age'] = {g + '_' + a:[] for g in ['F', 'M'] for a in self.age_groups}
     
@@ -45,7 +46,24 @@ class DataStatistics(DataExploration):
             for set_annotation in anotations.keys():
                 anotations[set_annotation] = self.average_last_n_values(anotations[set_annotation], self.num_annotators[set_annotation])
                 
-        return anotations            
+        return anotations
+    
+    # def mean_distributions(self, labels_task_n):
+    #     anotations = {}
+    #     anotations['gender'] = {g:[] for g in ['F', 'M']}
+    #     anotations['age'] = {a:[] for a in self.age_groups}
+    #     anotations['gender_age'] = {g + '_' + a:[] for g in ['F', 'M'] for a in self.age_groups}
+    
+    #     for set_gender, set_age, set_annotation in zip(self.gender_annotetors, self.age_annotetors, labels_task_n):
+    #         for gender, age, annotation in zip(set_gender, set_age, set_annotation):
+    #             anotations['gender'][gender].append(1 if annotation=='YES' else 0)
+    #             anotations['age'][age].append(1 if annotation=='YES' else 0)
+    #             anotations['gender_age'][gender + '_' + age].append(1 if annotation=='YES' else 0)
+                    
+    #         for set_annotation in anotations.keys():
+    #             anotations[set_annotation] = self.average_last_n_values(anotations[set_annotation], self.num_annotators[set_annotation])
+                
+    #     return anotations            
     
     def mean_value(self, dist_task_n, task, categoty):
         print('******* Mean *******')
@@ -126,8 +144,15 @@ class DataStatistics(DataExploration):
             print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
             
             print('\n')
+            
+            #DEBUG
+            # self.df.to_csv(REPO_PATH + '/data_visualization_Task' + str(n) + '_' +  '.csv', index=True)
+            
             for label in categories:
                 anotations = self.mean_distributions(self.df['labels_task'+ str(n) + join + label].tolist())
+                
+                #DEBUG
+                # save_dict_to_json(data=anotations, file_path=REPO_PATH + '/data_visualization_Task' + str(n) + '_' + '.json')
                 
                 print('#####################')
                 print('###### Class: ' + label)
@@ -144,7 +169,49 @@ class DataStatistics(DataExploration):
                 self.mean_value(anotations, 'task'+ str(n), label)
                 
                 
-                
+def save_dict_to_json(data, file_path):
+    with open(file_path, 'w') as f:
+        json.dump(data, f, indent=4)
+        
+        
+class LlmsPredsProcessing:
+    def __init__(self, tsv_files_path, task):
+        self.tsv_files_path = tsv_files_path
+        self.task = task
+    
+    def _get_llms_preds_paths_(self):
+        return glob.glob(os.path.join(self.tsv_files_path, '*{self.task}.tsv'))
+    
+    def _load_llms_preds_(self, preds_paths):
+        return {('-').join(path.split('_')[0].split('-')[:2]): pd.read_csv(path, sep='\t', index_col='id_EXIST') for path in preds_paths}
+    
+    def _add_non_sexist_index_(self, dict_dataframes, llms_preds_path):
+        for key in dict_dataframes.keys():
+            path = [('Task1.').join(p.split('Task*.')) for p in llms_preds_path if p.starswith(key + '.tsv')][0]
+            df_task1 = pd.read_csv(path, sep='\t', index_col='id_EXIST')
+            dict_dataframes[key] = dict_dataframes[key].reindex(df_task1.index, fill_value=0)
+            dict_dataframes[key]['lang'] =  df_task1['lang']
+            
+        return dict_dataframes
+    
+    def _dataframe_to_dict_(self, dict_dataframes):
+        #### STOP HERE !!!!!
+        
+    def main(self):
+        llms_preds_files = self._get_llms_preds_paths_()
+        llms_preds_dataframes = self._load_llms_preds_(llms_preds_files)
+        
+        if self.task != 'task1':
+            # Add non-sexist index to the dataframes
+            llms_preds_dataframes = self._add_non_sexist_index_(llms_preds_dataframes, llms_preds_files)
+            
+        
+            
+        return 
+        
+
+Llms_preds = LlmsPredsProcessing(PREDICTIONS_PATH)
+
 if __name__ == "__main__":
     # Global distribution of the data
     data_exploration = DataStatistics(DATA_PATH, 'EXIST2023_training-dev.csv', ANALYSES_PATH)

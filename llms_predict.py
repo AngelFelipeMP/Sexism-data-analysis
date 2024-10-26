@@ -56,7 +56,7 @@ class PROMPT:
                     MISOGYNY AND NON-SEXUAL VIOLENCE: The text expresses hatred and violence towards women.
 
 
-                The system must label the TWEET below with one or more sexism-type categories and put them inside parentheses as ['category', 'category', …]. The system must not retrieve any text apart from the categories, including explanations.
+                The system must label the TWEET below with one or more sexism-type categories and put them inside parentheses as ['category', 'category', … ]. The system must not retrieve any text apart from the categories, including explanations.
 
         
         TWEET: {tweet}'''.format(tweet=tweet)
@@ -144,7 +144,7 @@ if __name__ == '__main__':
     
     #DEBUG:
     for llm in tqdm(["gpt-3.5-turbo-0125"], desc="LLMs", position=0,ncols=100):
-        for prompt in tqdm(["ZeroShotTask3"], desc="Prompts", position=1, ncols=100):
+        for prompt in tqdm(["ZeroShotTask1", "ZeroShotTask2", "ZeroShotTask3"], desc="Prompts", position=1, ncols=100):
         
             LlmPreds = ChatLLM(
                                 model=llm, 
