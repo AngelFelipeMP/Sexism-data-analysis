@@ -56,8 +56,7 @@ class PROMPT:
                     MISOGYNY AND NON-SEXUAL VIOLENCE: The text expresses hatred and violence towards women.
 
 
-                The system must label the TWEET below with ONE or MORE sexism-type categories and put them inside parentheses as ['category', 'category', … ]. The system must not retrieve any text apart from the categories, including explanations.
-
+                The system must label the TWEET below with one or more sexism-type categories and put them inside parentheses as ['category', 'category', … ]. The system must not retrieve any text apart from the categories, including explanations.
 
         
         TWEET: {tweet}'''.format(tweet=tweet)
@@ -85,8 +84,7 @@ class DATA:
                                 index_col='id_EXIST')
         
         #DEBUG:
-        # self.df_data = self.df_data.head(30)
-        # self.df_data = self.df_data.loc[[100025,100107,100111,100115,100123]]
+        # self.df_data = self.df_data.head(10)
         
         if any(task in self.prompt_type for task in ['Task2', 'Task3']) :
             self.df_data = self._task_filter_data_()
@@ -141,12 +139,12 @@ class ChatLLM(DATA, PROMPT):
 
 
 if __name__ == '__main__':
-    # for llm in tqdm(["gpt-3.5-turbo-0125", "gpt-4-turbo-2024-04-09", "gpt-4o-2024-08-06"], desc="LLMs", position=0,ncols=100):
+    # for llm in tqdm(["gpt-3.5-turbo-0125", "gpt-4-turbo", "gpt-4o-2024-05-13"], desc="LLMs", position=0,ncols=100):
     #     for prompt in tqdm(["ZeroShotTask1", "ZeroShotTask2", "ZeroShotTask3"], desc="Prompts", position=1, ncols=100):
     
     #DEBUG:
-    for llm in tqdm(["gpt-4-turbo-2024-04-09"], desc="LLMs", position=0,ncols=100):
-        for prompt in tqdm(["ZeroShotTask3"], desc="Prompts", position=1, ncols=100):
+    for llm in tqdm(["gpt-4o-2024-05-13"], desc="LLMs", position=0,ncols=100):
+        for prompt in tqdm(["ZeroShotTask1", "ZeroShotTask2", "ZeroShotTask3"], desc="Prompts", position=1, ncols=100):
         
             LlmPreds = ChatLLM(
                                 model=llm, 

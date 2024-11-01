@@ -7,6 +7,7 @@ EXIST2023/
 analyzes/
 predictions/
 output_examples/
+copy_preditions/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
