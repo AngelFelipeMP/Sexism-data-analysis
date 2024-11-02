@@ -7,6 +7,7 @@ PACKAGE_PATH = REPO_PATH + '/' + DATA
 LABEL_GOLD_PATH = PACKAGE_PATH + '/evaluation/golds'
 ANALYSES_PATH = REPO_PATH + '/analyzes'
 PREDICTIONS_PATH = REPO_PATH + '/predictions'
+JSON_PREDICTIONS_PATH = REPO_PATH + '/json'
 
 S3_BUCKET = '/s3-bucket'
 ##Deprecated

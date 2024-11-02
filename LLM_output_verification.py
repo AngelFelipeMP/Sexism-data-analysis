@@ -3,7 +3,7 @@ import os
 import ast
 import re
 from difflib import get_close_matches
-from config import PREDICTIONS_PATH, CATEGORIES_TASK1, CATEGORIES_TASK2, CATEGORIES_TASK3
+from config import PREDICTIONS_PATH, CATEGORIES_TASK1, CATEGORIES_TASK2, CATEGORIES_TASK3, JSON_PREDICTIONS_PATH
 
 def output_report():
     preds_list =  sorted(os.listdir(PREDICTIONS_PATH))
@@ -87,8 +87,49 @@ def process_predictions():
             df[llm+'_processed'] = df[llm+'_processed'].apply(lambda x: add_category_no_sexist(x, preds_file))
             df = df.sort_index()
         
+        df = create_categories_columns(df, preds_file)
+        
         save_path = os.path.join(PREDICTIONS_PATH, preds_file.split('.tsv')[0] + '_processed.tsv')
         df.to_csv(save_path, sep='\t')
+        
+        
+def create_categories_columns(df, llm_file):
+    for llm in df.columns:
+        if 'processed' in llm:
+            if 'Task3' in llm_file:
+                categories = [cat for cat_list in df[llm].to_list() for cat in cat_list]
+                categories = list(set(categories))
+            else:
+                categories = df[llm].unique()
+            
+    for category in categories:
+        df[category] = df[llm].apply(lambda x: 1 if category in x else 0)
+        
+    return df
+
+
+def predictions_to_json():
+    preds_list = [file for file in os.listdir(PREDICTIONS_PATH) if '_processed' in file]
+    
+    for preds_file in preds_list:
+        file_path = os.path.join(PREDICTIONS_PATH, preds_file)
+        df = pd.read_csv(file_path, sep='\t', index_col='id_EXIST')
+        
+        llm = preds_file.split('_')[0]
+        categories_task = CATEGORIES_TASK1 if 'Task1' in preds_file else CATEGORIES_TASK2 if 'Task2' in preds_file else CATEGORIES_TASK3 
+        categories_task + ['UNKNOWN'] + ['-']
+        
+        for cat in categories_task:
+            dict_cats = {"gender":{},"age":{},"gender_age":{}}
+            
+            for key in dict_cats.keys():
+                    dict_cats[key][llm] = df[cat].to_list()
+                    
+            #COMMENT: I STOPED HERE 
+            #COMMENT: GENERATE JSON TO INCLUDE INTO THE STATISTICAL ANALYSIS
+            with open(os.path.join(JSON_PREDICTIONS_PATH, preds_file.split('.tsv')[0] + '_' + str(cat) +'_.json'), 'w') as f:
+                json.dump(dict_cats, f)
+            
 
 if __name__ == "__main__":
     output_report()

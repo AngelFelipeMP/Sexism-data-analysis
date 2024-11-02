@@ -150,6 +150,8 @@ class DataStatistics(DataExploration):
             
             for label in categories:
                 anotations = self.mean_distributions(self.df['labels_task'+ str(n) + join + label].tolist())
+                #COMMENT: Including LLMs predictions-> working on it
+                # annotations = self.include_llms_preds(anotations)
                 
                 #DEBUG
                 # save_dict_to_json(data=anotations, file_path=REPO_PATH + '/data_visualization_Task' + str(n) + '_' + '.json')
@@ -174,13 +176,20 @@ def save_dict_to_json(data, file_path):
         json.dump(data, f, indent=4)
         
         
+
+def dataframe_to_dict(df):
+    
+
+
+
+
 class LlmsPredsProcessing:
     def __init__(self, tsv_files_path, task):
         self.tsv_files_path = tsv_files_path
         self.task = task
     
     def _get_llms_preds_paths_(self):
-        return glob.glob(os.path.join(self.tsv_files_path, '*{self.task}.tsv'))
+        return glob.glob(os.path.join(self.tsv_files_path, '*{self.task}_processed.tsv'))
     
     def _load_llms_preds_(self, preds_paths):
         return {('-').join(path.split('_')[0].split('-')[:2]): pd.read_csv(path, sep='\t', index_col='id_EXIST') for path in preds_paths}
@@ -204,8 +213,6 @@ class LlmsPredsProcessing:
         if self.task != 'task1':
             # Add non-sexist index to the dataframes
             llms_preds_dataframes = self._add_non_sexist_index_(llms_preds_dataframes, llms_preds_files)
-            
-        
             
         return 
         
