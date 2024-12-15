@@ -2,8 +2,9 @@ import pandas as pd
 import os
 import ast
 import re
+import json
 from difflib import get_close_matches
-from config import PREDICTIONS_PATH, CATEGORIES_TASK1, CATEGORIES_TASK2, CATEGORIES_TASK3, JSON_PREDICTIONS_PATH
+from config import PREDICTIONS_PATH, CATEGORIES_TASK1, CATEGORIES_TASK2, CATEGORIES_TASK3, JSON_PREDICTIONS_PATH, AGE_GROUPS, GENDER_GROUPS
 
 def output_report():
     preds_list =  sorted(os.listdir(PREDICTIONS_PATH))
@@ -70,6 +71,9 @@ def process_predictions():
         file_path = os.path.join(PREDICTIONS_PATH, preds_file)
         df = pd.read_csv(file_path, sep='\t', index_col='id_EXIST')
         
+        #DEBUG
+        print(len(df))
+        
         llm = preds_file.split('_')[0]
         
         df[llm+'_processed'] = df[llm].apply(lambda x: '' if isinstance(x, float) else x)
@@ -79,31 +83,55 @@ def process_predictions():
         
         if 'Task2' in preds_file or 'Task3' in preds_file:
             task1_file = preds_file.split('.tsv')[0][:-1] + '1' + '_processed.tsv'
+            #DEBUG
+            print(task1_file)
+            
             df_task1 = pd.read_csv(os.path.join(PREDICTIONS_PATH, task1_file), sep='\t', index_col='id_EXIST')
+            
+            #DEBUG
+            print(len(df_task1))
+            print(df_task1[llm+'_processed'].unique())
+            print(len(df_task1.loc[df_task1[llm+'_processed']=='NO',['lang']]))
+            print(len(df_task1.loc[df_task1[llm+'_processed']=='YES',['lang']]))
+            
             df_task1 = df_task1.loc[df_task1[llm+'_processed']=='NO',['lang']]
             
+            #DEBUG
+            print(len(df))
+            
             df = pd.concat([df,df_task1])
+            
+            #DEBUG
+            print(len(df))
 
             df[llm+'_processed'] = df[llm+'_processed'].apply(lambda x: add_category_no_sexist(x, preds_file))
             df = df.sort_index()
         
-        df = create_categories_columns(df, preds_file)
+        df = create_categories_columns(df, llm, categories_task)
         
         save_path = os.path.join(PREDICTIONS_PATH, preds_file.split('.tsv')[0] + '_processed.tsv')
         df.to_csv(save_path, sep='\t')
         
-        
-def create_categories_columns(df, llm_file):
-    for llm in df.columns:
-        if 'processed' in llm:
-            if 'Task3' in llm_file:
-                categories = [cat for cat_list in df[llm].to_list() for cat in cat_list]
-                categories = list(set(categories))
-            else:
-                categories = df[llm].unique()
+#TODO: add ['UNKNOWN'] + ['-'] categories task 2 and Task 3
+# def create_categories_columns(df, llm_file):
+#     for llm in df.columns:
+#         if 'processed' in llm:
+#             if 'Task3' in llm_file:
+#                 categories = [cat for cat_list in df[llm].to_list() for cat in cat_list]
+#                 categories = list(set(categories))
+#             else:
+#                 categories = df[llm].unique()
             
+#     for category in categories:
+#         df[category] = df[llm].apply(lambda x: 1 if category in x else 0)
+        
+#     return df
+
+def create_categories_columns(df, llm, standard_categories):
+    categories = standard_categories + ['UNKNOWN'] + ['-']
+    
     for category in categories:
-        df[category] = df[llm].apply(lambda x: 1 if category in x else 0)
+        df[category] = df[llm+'_processed'].apply(lambda x: 1 if category in x else 0)
         
     return df
 
@@ -115,23 +143,29 @@ def predictions_to_json():
         file_path = os.path.join(PREDICTIONS_PATH, preds_file)
         df = pd.read_csv(file_path, sep='\t', index_col='id_EXIST')
         
-        llm = preds_file.split('_')[0]
+        #COMMENT: Adpatading for acommodation LLM with demographics
+        # llm = preds_file.split('_')[0]
+        llm = preds_file.split('ZeroShotTask')[0]
+        
         categories_task = CATEGORIES_TASK1 if 'Task1' in preds_file else CATEGORIES_TASK2 if 'Task2' in preds_file else CATEGORIES_TASK3 
-        categories_task + ['UNKNOWN'] + ['-']
+        #TODO: chech if the codes need categori: ['-']
+        categories_task = categories_task + ['UNKNOWN'] + ['-']
         
         for cat in categories_task:
             dict_cats = {"gender":{},"age":{},"gender_age":{}}
-            
             for key in dict_cats.keys():
-                    dict_cats[key][llm] = df[cat].to_list()
+                
+                if any(age in llm for age in AGE_GROUPS) and any(gender in llm for gender in GENDER_GROUPS):
+                    dict_cats["gender_age"][llm] = df[cat].to_list()
+                e
+                #COMMENT WORKING HERE !!!!!!!
                     
-            #COMMENT: I STOPED HERE 
-            #COMMENT: GENERATE JSON TO INCLUDE INTO THE STATISTICAL ANALYSIS
-            with open(os.path.join(JSON_PREDICTIONS_PATH, preds_file.split('.tsv')[0] + '_' + str(cat) +'_.json'), 'w') as f:
-                json.dump(dict_cats, f)
+            with open(os.path.join(JSON_PREDICTIONS_PATH, preds_file.split('.tsv')[0] + '_' + '-'.join(cat.split(' ')) + '_.json'), 'w') as f:
+                json.dump(dict_cats, f, indent=4)
             
 
 if __name__ == "__main__":
     output_report()
     process_predictions()
     output_report()
+    predictions_to_json()

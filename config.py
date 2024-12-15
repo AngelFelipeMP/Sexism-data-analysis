@@ -7,7 +7,7 @@ PACKAGE_PATH = REPO_PATH + '/' + DATA
 LABEL_GOLD_PATH = PACKAGE_PATH + '/evaluation/golds'
 ANALYSES_PATH = REPO_PATH + '/analyzes'
 PREDICTIONS_PATH = REPO_PATH + '/predictions'
-JSON_PREDICTIONS_PATH = REPO_PATH + '/json'
+JSON_PREDICTIONS_PATH = REPO_PATH + '/json_predictions'
 
 S3_BUCKET = '/s3-bucket'
 ##Deprecated
@@ -21,3 +21,8 @@ CATEGORIES_TASK3 = ['IDEOLOGICAL AND INEQUALITY',
                     'OBJECTIFICATION', 
                     'SEXUAL VIOLENCE', 
                     'MISOGYNY AND NON-SEXUAL VIOLENCE']
+
+AGE_GROUPS = ['18-24', '23-45', '45+']
+GENDER_GROUPS = ['female', 'male']
+
+LLMS = ["gpt-3.5-turbo-0125", "gpt-4-turbo-2024-04-09", "gpt-4o-2024-08-06"]

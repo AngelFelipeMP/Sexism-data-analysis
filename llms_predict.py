@@ -12,18 +12,27 @@ class PROMPT:
     def __init__(self):
         pass
     
-    def ZeroShotTask1(self, tweet):
+    # def ZeroShotTask1(self, tweet):
+    #     return '''The system's primary task is determining whether a tweet contains sexist expressions or 
+    #                 behaviours (i.e., the tweet is sexist itself, describes a sexist situation, or criticises sexist 
+    #                 behaviour). The system must retrieve YES if the TWEET below contains sexist
+    #                 expressions or behaviours and retrieve NO otherwise. The system must not retrieve any text 
+    #                 apart from the two possible categories, YES and NO.
+        
+    #     TWEET: {tweet}'''.format(tweet=tweet)
+    
+    def ZeroShotTask1(self, tweet, demographic_info=''):
         return '''The system's primary task is determining whether a tweet contains sexist expressions or 
                     behaviours (i.e., the tweet is sexist itself, describes a sexist situation, or criticises sexist 
-                    behaviour). The system must retrieve YES if the TWEET below contains sexist
+                    behaviour){demographic_info}. The system must retrieve YES if the TWEET below contains sexist
                     expressions or behaviours and retrieve NO otherwise. The system must not retrieve any text 
                     apart from the two possible categories, YES and NO.
         
-        TWEET: {tweet}'''.format(tweet=tweet)
+        TWEET: {tweet}'''.format(tweet=tweet, demographic_info=demographic_info)
         
-    def ZeroShotTask2(self, tweet):
+    def ZeroShotTask2(self, tweet, demographic_info=''):
         return '''The system's primary task is categorising a tweet containing sexist expressions or behaviours
-                    according to the author's intention. There are three possible categories: DIRECT, REPORTED
+                    according to the author's intention{demographic_info}. There are three possible categories: DIRECT, REPORTED
                     and JUDGEMENTAL.
                     
                 Categories definition:
@@ -34,11 +43,11 @@ class PROMPT:
                 The system must classify the TWEET below among one of the three categories. The system must not retrieve any text apart from the category, including explanations.
                     
         
-        TWEET: {tweet}'''.format(tweet=tweet)
+        TWEET: {tweet}'''.format(tweet=tweet, demographic_info=demographic_info)
         
-    def ZeroShotTask3(self, tweet):
+    def ZeroShotTask3(self, tweet, demographic_info=''):
         return '''The system's primary task is to label a tweet containing sexist expressions or behaviours 
-                    according to the sexism types presented in the tweet. It is a multilabel task, so a tweet can be 
+                    according to the sexism types presented in the tweet{demographic_info}. It is a multilabel task, so a tweet can be 
                     assigned to one or more categories. 
 
                 There are five possible sexism-type categories: 
@@ -59,17 +68,16 @@ class PROMPT:
                 The system must label the TWEET below with ONE or MORE sexism-type categories and put them inside parentheses as ['category', 'category', … ]. The system must not retrieve any text apart from the categories, including explanations.
 
 
-        
-        TWEET: {tweet}'''.format(tweet=tweet)
+        TWEET: {tweet}'''.format(tweet=tweet, demographic_info=demographic_info)
         
     
-    def get_prompt(self, prompt_type, tweet):
+    def get_prompt(self, prompt_type, tweet, demographic_info=''):
         if prompt_type == "ZeroShotTask1":
-            return self.ZeroShotTask1(tweet)
+            return self.ZeroShotTask1(tweet, demographic_info)
         elif prompt_type == "ZeroShotTask2":
-            return self.ZeroShotTask2(tweet)
+            return self.ZeroShotTask2(tweet, demographic_info)
         elif prompt_type == "ZeroShotTask3":
-            return self.ZeroShotTask3(tweet)
+            return self.ZeroShotTask3(tweet, demographic_info)
         else:
             raise ValueError(f"The prompt type {prompt_type} is not available.")
         
@@ -85,14 +93,18 @@ class DATA:
                                 index_col='id_EXIST')
         
         #DEBUG:
-        # self.df_data = self.df_data.head(30)
+        # self.df_data = self.df_data.head(10)
         # self.df_data = self.df_data.loc[[100025,100107,100111,100115,100123]]
         
         if any(task in self.prompt_type for task in ['Task2', 'Task3']) :
             self.df_data = self._task_filter_data_()
         
     def _task_filter_data_(self):
-        df_task1 = pd.read_csv(PREDICTIONS_PATH + '/' + self.model + '_' + 'ZeroShotTask1' + '.tsv', sep='\t', index_col='id_EXIST')
+        #COMMENT Adpated to include gender and age features
+        # df_task1 = pd.read_csv(PREDICTIONS_PATH + '/' + self.model + '_' + 'ZeroShotTask1' + '.tsv', sep='\t', index_col='id_EXIST')
+        task1_file = [file for file in os.listdir(PREDICTIONS_PATH) if all(features in file for features in [self.model, self.gender, self.age, 'ZeroShotTask1', 'processed'])][0]
+        df_task1 = pd.read_csv(PREDICTIONS_PATH + '/' + task1_file, sep='\t', index_col='id_EXIST')
+        
         # return self.df_data.loc[df_task1.loc[df_task1[self.model]=='YES'].index.tolist()]
             # Get the indices where the model prediction is 'YES'
         yes_indices = df_task1.loc[df_task1[self.model] == 'YES'].index
@@ -105,18 +117,22 @@ class DATA:
     
 
 class ChatLLM(DATA, PROMPT):
-    def __init__(self, model, prompt_type, max_tokens=50):
+    def __init__(self, model, prompt_type, gender, age, demographics_text, max_tokens=50):
         super().__init__()
         self.prompt_type = prompt_type
         self.model = model
         self.max_tokens = max_tokens
+        self.demographics = demographics_text
+        self.gender = gender
+        self.age = age
+        
 
     def get_predictions(self):
         predictions = []
         
-        for i in tqdm(range(len(self.df_data)), desc="Predicting Sexism", leave=False, position=1, ncols=100):  # Add tqdm to the loop
+        for i in tqdm(range(len(self.df_data)), desc="Predicting Sexism", leave=False, position=4, ncols=100):  # Add tqdm to the loop
             tweet = self.df_data.iloc[i]['tweet']
-            prompt = super().get_prompt(self.prompt_type, tweet)
+            prompt = super().get_prompt(self.prompt_type, tweet, self.demographics)
             
             #DEBUG:
             # tqdm.write('\n')
@@ -131,7 +147,7 @@ class ChatLLM(DATA, PROMPT):
         
         
     def save_predictions(self):
-        self.df_data.loc[:,['lang', self.model]].to_csv(PREDICTIONS_PATH + '/' + self.model + '_' + self.prompt_type + '.tsv', sep='\t')
+        self.df_data.loc[:,['lang', self.model]].to_csv(PREDICTIONS_PATH + '/' + self.model + '_' + self.gender + '_' + self.age + '_' + self.prompt_type + '.tsv', sep='\t')
     
     def main(self):
         super().load_data()
@@ -144,13 +160,43 @@ if __name__ == '__main__':
     # for llm in tqdm(["gpt-3.5-turbo-0125", "gpt-4-turbo-2024-04-09", "gpt-4o-2024-08-06"], desc="LLMs", position=0,ncols=100):
     #     for prompt in tqdm(["ZeroShotTask1", "ZeroShotTask2", "ZeroShotTask3"], desc="Prompts", position=1, ncols=100):
     
-    #DEBUG:
-    for llm in tqdm(["gpt-4-turbo-2024-04-09"], desc="LLMs", position=0,ncols=100):
-        for prompt in tqdm(["ZeroShotTask3"], desc="Prompts", position=1, ncols=100):
-        
-            LlmPreds = ChatLLM(
+    for llm in tqdm(["gpt-4o-2024-08-06"], desc="LLMs", position=3,ncols=100):
+        for prompt in tqdm(["ZeroShotTask2"], desc="Prompts", position=2, ncols=100):
+            
+            # Demographics 
+            for gender in tqdm([ "", "female", "male"], desc="Genders", position=1, ncols=100):
+                for age in tqdm(["18-22", "23-45", "46+", ""], desc="Ages", position=0, ncols=100):
+                
+                    if gender == "" and age == "":
+                        break
+                    elif gender != "" and age != "":
+                        demographic_info = f' from the perspective of a {gender} aged {age} years old'
+                        continue
+                    elif gender != "":
+                        demographic_info = f' from the perspective of a {gender}'
+                    elif age != "":
+                        demographic_info = f' from the perspective of an aged {age} years old'
+
+                    LlmPreds = ChatLLM(
                                 model=llm, 
                                 prompt_type=prompt,
+                                demographics_text=demographic_info,
+                                gender=gender,
+                                age=age,
                                 max_tokens=50)
-            LlmPreds.main()
+                    LlmPreds.main()
+        
+
+
+
+
+    #DEBUG:
+    # for llm in tqdm(["gpt-4-turbo-2024-04-09"], desc="LLMs", position=0,ncols=100):
+    #     for prompt in tqdm(["ZeroShotTask3"], desc="Prompts", position=1, ncols=100):
+        
+    #         LlmPreds = ChatLLM(
+    #                             model=llm, 
+    #                             prompt_type=prompt,
+    #                             max_tokens=50)
+    #         LlmPreds.main()
         
