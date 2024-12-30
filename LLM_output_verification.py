@@ -153,12 +153,21 @@ def predictions_to_json():
         
         for cat in categories_task:
             dict_cats = {"gender":{},"age":{},"gender_age":{}}
-            for key in dict_cats.keys():
+            
+            if any(age in llm for age in AGE_GROUPS) and any(gender in llm for gender in GENDER_GROUPS):
+                dict_cats["gender_age"][llm] = df[cat].to_list()
+            elif any(age in llm for age in AGE_GROUPS):
+                dict_cats["age"][llm] = df[cat].to_list()
+            elif any(gender in llm for gender in GENDER_GROUPS):
+                dict_cats["gender"][llm] = df[cat].to_list()
+            else:
+                for key in dict_cats.keys():
+                    dict_cats[key][llm] = df[cat].to_list()
                 
-                if any(age in llm for age in AGE_GROUPS) and any(gender in llm for gender in GENDER_GROUPS):
-                    dict_cats["gender_age"][llm] = df[cat].to_list()
-                e
-                #COMMENT WORKING HERE !!!!!!!
+                
+                
+                
+                #DEBUG !!!!
                     
             with open(os.path.join(JSON_PREDICTIONS_PATH, preds_file.split('.tsv')[0] + '_' + '-'.join(cat.split(' ')) + '_.json'), 'w') as f:
                 json.dump(dict_cats, f, indent=4)

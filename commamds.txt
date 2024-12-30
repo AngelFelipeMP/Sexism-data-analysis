@@ -2,6 +2,10 @@
 2) rename the directory as EXIST2023
 3) inside "Sexism-data-analysis" create "data" and "analyzes" directory
 4) run the scripts in sequence:
-    - "data_preparation.py"
+    - "data_preparation.py" -> add flags
     - "data_statistics.py"
     - "data_exploration.py"
+5) run the scripts in sequence:
+    - "llms_predict.py"
+    - "LLM_output_verification.py"
+    - "data_statistics.py"

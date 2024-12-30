@@ -22,7 +22,7 @@ CATEGORIES_TASK3 = ['IDEOLOGICAL AND INEQUALITY',
                     'SEXUAL VIOLENCE', 
                     'MISOGYNY AND NON-SEXUAL VIOLENCE']
 
-AGE_GROUPS = ['18-24', '23-45', '45+']
+AGE_GROUPS = ['18-22', '23-45', '45+']
 GENDER_GROUPS = ['female', 'male']
 
 LLMS = ["gpt-3.5-turbo-0125", "gpt-4-turbo-2024-04-09", "gpt-4o-2024-08-06"]
