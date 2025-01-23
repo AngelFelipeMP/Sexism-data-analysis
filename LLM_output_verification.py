@@ -64,6 +64,7 @@ def process_predictions():
     preds_list = [file for file in os.listdir(PREDICTIONS_PATH) if '_processed' not in file]
     preds_list = sorted(preds_list, key=lambda x: (0 if 'Task1' in x else 1, x))
     
+    # #DEBUG
     # preds_list = ['gpt-4o-2024-08-06_ZeroShotTask1.tsv']
 
     for preds_file in preds_list:
@@ -71,8 +72,8 @@ def process_predictions():
         file_path = os.path.join(PREDICTIONS_PATH, preds_file)
         df = pd.read_csv(file_path, sep='\t', index_col='id_EXIST')
         
-        #DEBUG
-        print(len(df))
+        # #DEBUG
+        # print(len(df))
         
         llm = preds_file.split('_')[0]
         
@@ -83,8 +84,8 @@ def process_predictions():
         
         if 'Task2' in preds_file or 'Task3' in preds_file:
             task1_file = preds_file.split('.tsv')[0][:-1] + '1' + '_processed.tsv'
-            #DEBUG
-            print(task1_file)
+            # #DEBUG
+            # print(task1_file)
             
             df_task1 = pd.read_csv(os.path.join(PREDICTIONS_PATH, task1_file), sep='\t', index_col='id_EXIST')
             
@@ -96,12 +97,13 @@ def process_predictions():
             
             df_task1 = df_task1.loc[df_task1[llm+'_processed']=='NO',['lang']]
             
-            #DEBUG
+            # #DEBUG
+            # print(len(df_task1))
             print(len(df))
             
             df = pd.concat([df,df_task1])
             
-            #DEBUG
+            # #DEBUG
             print(len(df))
 
             df[llm+'_processed'] = df[llm+'_processed'].apply(lambda x: add_category_no_sexist(x, preds_file))
@@ -143,12 +145,9 @@ def predictions_to_json():
         file_path = os.path.join(PREDICTIONS_PATH, preds_file)
         df = pd.read_csv(file_path, sep='\t', index_col='id_EXIST')
         
-        #COMMENT: Adpatading for acommodation LLM with demographics
-        # llm = preds_file.split('_')[0]
         llm = preds_file.split('ZeroShotTask')[0]
         
         categories_task = CATEGORIES_TASK1 if 'Task1' in preds_file else CATEGORIES_TASK2 if 'Task2' in preds_file else CATEGORIES_TASK3 
-        #TODO: chech if the codes need categori: ['-']
         categories_task = categories_task + ['UNKNOWN'] + ['-']
         
         for cat in categories_task:
@@ -163,11 +162,6 @@ def predictions_to_json():
             else:
                 for key in dict_cats.keys():
                     dict_cats[key][llm] = df[cat].to_list()
-                
-                
-                
-                
-                #DEBUG !!!!
                     
             with open(os.path.join(JSON_PREDICTIONS_PATH, preds_file.split('.tsv')[0] + '_' + '-'.join(cat.split(' ')) + '_.json'), 'w') as f:
                 json.dump(dict_cats, f, indent=4)

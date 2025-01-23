@@ -28,9 +28,9 @@ GENDER_GROUPS = ['female', 'male']
 LLMS = ["gpt-3.5-turbo-0125", "gpt-4-turbo-2024-04-09", "gpt-4o-2024-08-06"]
 PROMPTS = ["ZeroShotTask1", "ZeroShotTask2", "ZeroShotTask3"]
 
-API_KEY = 'AZURE_OPENAI_KEY' #'OPENAI_KEY'
+API_KEY = 'OPENAI_KEY' #'AZURE_OPENAI_KEY'
 
-API_PROVIDER = 'AZURE' #'OPENAI'
+API_PROVIDER = 'OPENAI' #'AZURE'
 
 # AZURE_ENDPOINT = 'https://angelsachinopenai.openai.azure.com/'
 AZURE_ENDPOINT = 'https://angel-m4up853w-eastus2.cognitiveservices.azure.com/'

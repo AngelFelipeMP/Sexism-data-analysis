@@ -2,13 +2,14 @@ import os
 from openai import OpenAI, AzureOpenAI
 import logging
 from icecream import ic
-from config import (
+# from config import (
+from config_fill_unaswered_calls import (
     API_PROVIDER, 
     AZURE_ENDPOINT,
     AZURE_API_VERSION
 )
 # Configure the logger
-logging.basicConfig(filename='summarizer.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(filename='summarizer_unanswered_calls.log', filemode='a', format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 if API_PROVIDER == 'AZURE':
     client = AzureOpenAI(
@@ -17,6 +18,7 @@ if API_PROVIDER == 'AZURE':
         api_key=os.environ.get('AZURE_OPENAI_KEY'))
 else:
     client = OpenAI(api_key = os.environ.get('OPENAI_KEY'))
+    print("OpenAI client created")
 
 class OpenAIAPI:
     def __init__(self):

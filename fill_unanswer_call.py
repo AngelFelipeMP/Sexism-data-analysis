@@ -1,8 +1,10 @@
 import pandas as pd
-from llmsapi import llmsAPI
+# from llmsapi import llmsAPI
+from llmsapi_fill_unaswered_call import llmsAPI
 import logging
 from icecream import ic
-from config import *
+# from config import *
+from config_fill_unaswered_calls import *
 from tqdm import tqdm
 import time
 
@@ -84,7 +86,22 @@ class DATA:
                                 usecols=columns,
                                 index_col='id_EXIST')
         
-        #DEBUG:
+        self.df_preds = pd.read_csv(PREDICTIONS_PATH + '/' + self.model + '_' + self.gender + '_' + self.age + '_' + self.prompt_type + '.tsv', sep='\t', index_col='id_EXIST')
+        df_no_answered = self.df_preds.loc[(self.df_preds[self.model] == 'FILTERED') | (self.df_preds[self.model].isna())]
+        self.df_data = self.df_data.loc[df_no_answered.index.tolist()]
+        
+        # #DEBUG:
+        # print('\n')
+        # print('######### DATA #########')
+        # print(len(self.df_preds))
+        # print(self.df_preds.head())
+        # print(len(df_no_answered))
+        # print(df_no_answered.head())
+        # print(len(self.df_data))
+        # print(self.df_data.tail())
+        # print('######### DATA #########')
+        
+        # #DEBUG:
         # self.df_data = self.df_data.head(10)
         # self.df_data = self.df_data.loc[[100025,100107,100111,100115,100123]]
         
@@ -168,7 +185,15 @@ class ChatLLM(DATA, PROMPT):
         
         
     def save_predictions(self):
-        self.df_data.loc[:,['lang', self.model]].to_csv(PREDICTIONS_PATH + '/' + self.model + '_' + self.gender + '_' + self.age + '_' + self.prompt_type + '.tsv', sep='\t')
+        # self.df_data.loc[:,['lang', self.model]].to_csv(PREDICTIONS_PATH + '/' + self.model + '_' + self.gender + '_' + self.age + '_' + self.prompt_type + '.tsv', sep='\t')
+        self.df_preds.dropna(subset=[self.model], inplace=True)
+        self.df_preds.drop(labels=self.df_preds.loc[self.df_preds[self.model] == 'FILTERED'].index, axis=0, inplace=True)
+        
+        self.df_all_preds = pd.concat([self.df_data, self.df_preds], axis=0)
+        self.df_all_preds.sort_index(inplace=True)
+        
+        self.df_all_preds.loc[:,['lang', self.model]].to_csv(PREDICTIONS_PATH + '/' + self.model + '_' + self.gender + '_' + self.age + '_' + self.prompt_type + '.tsv', sep='\t')
+        
     
     def main(self):
         super().load_data()
@@ -186,10 +211,10 @@ if __name__ == '__main__':
         for prompt in tqdm(["ZeroShotTask3"], desc="Prompts", position=2, ncols=100):
             
             # Demographics 
+            # for gender in tqdm([ "", "female", "male"], desc="Genders", position=1, ncols=100):
+            #     for age in tqdm(["18-22", "23-45", "46+", ""], desc="Ages", position=0, ncols=100):
             for gender in tqdm([ "", "female", "male"], desc="Genders", position=1, ncols=100):
                 for age in tqdm(["18-22", "23-45", "46+", ""], desc="Ages", position=0, ncols=100):
-            # for gender in tqdm(["female", "male"], desc="Genders", position=1, ncols=100):
-            #     for age in tqdm(["18-22", "23-45", "46+"], desc="Ages", position=0, ncols=100):
                 
                     if gender == "" and age == "":
                         break

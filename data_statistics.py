@@ -1,7 +1,7 @@
 import pandas as pd
 import glob
 from config import *
-from scipy.stats import f_oneway, ttest_ind, tukey_hsd
+from scipy.stats import f_oneway, ttest_ind, tukey_hsd, bootstrap
 import numpy as np
 from data_exploration import DataExploration
 import matplotlib.pyplot as plt
@@ -102,39 +102,71 @@ class DataStatistics(DataExploration):
             dist_group.sort(key=lambda x: x[0])
             row_columns = [k for k,_ in dist_group]
             alpha_matrix = pd.DataFrame(index=row_columns, columns=row_columns)
-            p_value_matrix = pd.DataFrame(index=row_columns, columns=row_columns)
-            level_of_measurement = 'nominal' if len(row_columns) == (6 + len(LLMS)) else 'ratio'
+            ci_matrix = pd.DataFrame(index=row_columns, columns=row_columns)
+            
+            columns_plus_ci = []
+            columns_plus_ci.extend([item for col in row_columns for item in (col, col + ' ci +', col + ' ci -')])
+            alpha_ci_matrix = pd.DataFrame(index=row_columns, columns=columns_plus_ci)
+            
+            # #COMMENT: it seems we dont need to calculate the p-value for the alpha matrix
+            # p_value_matrix = pd.DataFrame(index=row_columns, columns=row_columns)
+            
+            ##COMMENT: line adapted after unclusion of demographic data 
+            # level_of_measurement = 'nominal' if len(row_columns) == (6 + len(LLMS)) else 'ratio'
+            level_of_measurement = 'nominal' if group=='gender_age' else 'ratio'
             
             for (col1, labels1), (col2, labels2) in tqdm(combinations_with_replacement(dist_group, 2), desc="Krippendorff alpha", ncols=100):
                 
                 if labels1 == labels2:
                     alpha_value = 1
                 else:
-                    #DEBUG:
-                    print('@@@@@ DEBUG @@@@')
-                    print(col1)
-                    print(type(labels1))
-                    print(len(labels1))
-                    print(col2)
-                    print(type(labels2))
-                    print(len(labels2))
+                    # #DEBUG:
+                    # print('@@@@@ DEBUG @@@@')
+                    # print(col1)
+                    # print(type(labels1))
+                    # print(len(labels1))
+                    # print(col2)
+                    # print(type(labels2))
+                    # print(len(labels2))
                     
                     alpha_value = krippendorff.alpha([labels1, labels2], level_of_measurement=level_of_measurement)
                 
                 alpha_matrix.at[col1, col2] = alpha_value
                 alpha_matrix.at[col2, col1] = alpha_value  # Symmetric matrix
             
-                # calculate statistic significance for alpha matrix
-                p_value = self.statistic_significance_Krippendorff_alpha(level_of_measurement, labels1, labels2, alpha_value, n_permutations=10)
+                # #COMMENT: it seems we dont need to calculate the p-value for the alpha matrix
+                # # calculate statistic significance for alpha matrix
+                # p_value = self.statistic_significance_Krippendorff_alpha(level_of_measurement, labels1, labels2, alpha_value, n_permutations=2)
                 
-                p_value_matrix.at[col1, col2] = p_value
-                p_value_matrix.at[col2, col1] = p_value  # Symmetric matrix
-            
+                # p_value_matrix.at[col1, col2] = p_value
+                # p_value_matrix.at[col2, col1] = p_value  # Symmetric matrix
+                
+                # calculate confidence interval for alpha matrix
+                # if col1 != col2:
+                ci_lower, ci_upper = self.confidence_interval_krippendorff_alpha(level_of_measurement, labels1, labels2, n_resamples=10000)
+                # else:
+                #     ci_lower, ci_upper = 0, 0
+                
+                ci_matrix.at[col1, col2] = (str(ci_upper)+'/'+str(ci_lower))
+                ci_matrix.at[col2, col1] = (str(ci_upper)+'/'+str(ci_lower))
+                
+                alpha_ci_matrix.at[col1, col2] = alpha_value
+                alpha_ci_matrix.at[col1, col2 + ' ci +'] = ci_upper
+                alpha_ci_matrix.at[col1, col2 + ' ci -'] = ci_lower
+                
+                alpha_ci_matrix.at[col2, col1] = alpha_value
+                alpha_ci_matrix.at[col2, col1 + ' ci +'] = ci_upper
+                alpha_ci_matrix.at[col2, col1 + ' ci -'] = ci_lower
             
             # save alpha matrix to csv file
             alpha_matrix.to_csv(self.analyses_path + '/Krippendorff-alpha_'+ task + '_' + categoty + '_' + group +'.csv', index=True)
-            p_value_matrix.to_csv(self.analyses_path + '/P_vakues_Krippendorff-alpha_'+ task + '_' + categoty + '_' + group +'.csv', index=True)
             print(alpha_matrix)
+            
+            # #COMMENT: it seems we dont need to calculate the p-value for the alpha matrix
+            # p_value_matrix.to_csv(self.analyses_path + '/P_vakues_Krippendorff-alpha_'+ task + '_' + categoty + '_' + group +'.csv', index=True)
+            
+            ci_matrix.to_csv(self.analyses_path + '/CI_Krippendorff-alpha_'+ task + '_' + categoty + '_' + group +'.csv', index=True)
+            alpha_ci_matrix.to_csv(self.analyses_path + '/Alpha_CI_Krippendorff-alpha_'+ task + '_' + categoty + '_' + group +'.csv', index=True)
             
 
     def statistic_significance_Krippendorff_alpha(self, level_of_measurement, annotations1, annotations2, alpha_value, n_permutations, seed=42):
@@ -158,7 +190,36 @@ class DataStatistics(DataExploration):
         p_value = sum(1 for pa in permuted_alphas if pa >= alpha_value) / n_permutations
         
         return p_value
+    
+    def confidence_interval_krippendorff_alpha(self, level_of_measurement, labels1, labels2, n_resamples=10000):
+        reliability_d = np.array([labels1, labels2])
+        data_for_bootstrap = reliability_d.T
+        
+        # # Check for degenerate data
+        # if np.all(reliability_d == reliability_d[0]):
+        #     raise ValueError("Degenerate data: all values are identical.")
+        
+        compute_alpha = lambda data: krippendorff.alpha(reliability_data=data.reshape(data_for_bootstrap.shape), level_of_measurement=level_of_measurement)
+        
+        # #DEBUG:
+        # print('\n')
+        # print(data_for_bootstrap.shape)
+        # print(compute_alpha(data_for_bootstrap))
+        
+        flat_data = data_for_bootstrap.flatten()
 
+        # res = bootstrap((data_for_bootstrap,), compute_alpha, confidence_level=0.95, paired=True, method='percentile', n_resamples=n_resamples)
+        res = bootstrap((flat_data,), compute_alpha, confidence_level=0.95, paired=True, method='percentile', n_resamples=n_resamples)
+        ci_lower, ci_upper = res.confidence_interval
+
+        # #DEBUG:
+        # print('CI lower: ', ci_lower)
+        # print('CI upper: ', ci_upper)
+        # print( 'E', res.standard_error)
+        # exit()
+        
+        return ci_lower, ci_upper
+        
 
     def t_test(self, labels_task_n):
         print('###### T-test ######')
@@ -181,7 +242,11 @@ class DataStatistics(DataExploration):
             
             print('\n')
             
-            #DEBUG
+            # COMMENT: Remove line below
+            if n > 1:
+                exit()
+            
+            # #DEBUG
             # self.df.to_csv(REPO_PATH + '/data_visualization_Task' + str(n) + '_' +  '.csv', index=True)
             
             for label in categories:
@@ -190,7 +255,10 @@ class DataStatistics(DataExploration):
                 anotations = include_llms_preds(anotations,label_column, n)
                 
                 #DEBUG
-                # save_dict_to_json(data=anotations, file_path=REPO_PATH + '/data_visualization_Task' + str(n) + '_' + '.json')
+                # if n == 2:
+                #     exit()
+                # save_dict_to_json(data=anotations, file_path=REPO_PATH + '/data_visualization_Task' + str(n) + '_' +  +'.json')
+                
                 
                 print('#####################')
                 print('###### Class: ' + label_column)
@@ -207,16 +275,20 @@ class DataStatistics(DataExploration):
                 self.mean_value(anotations, 'task'+ str(n), label)
                 
                 
+                
 def save_dict_to_json(data, file_path):
     with open(file_path, 'w') as f:
         json.dump(data, f, indent=4)
         
         
 def include_llms_preds(annotations, category, task_number):
+    # #DEBUG:
+    # print('category: ', category)
+    
     
     llms_preds = sorted([file for file in os.listdir(JSON_PREDICTIONS_PATH) if (('_' + '-'.join(category.split(' ')) + '_') in file) and ('Task' + str(task_number) in file)])
-    #DEBUG:
-    print('LLMs predictions: ', llms_preds)
+    # #DEBUG:
+    # print('LLMs predictions: ', llms_preds)
     
     for preds_file in llms_preds:
         with open(os.path.join(JSON_PREDICTIONS_PATH, preds_file), 'r') as f:
@@ -224,6 +296,8 @@ def include_llms_preds(annotations, category, task_number):
     
         # Iterate through the first layer keys
         for key in annotations.keys():
+                
+            if llm_preds_json[key]:
                 # Add the LLM predictions to the annotations dict
                 for llm, preds in llm_preds_json[key].items():
                     annotations[key][llm] = preds
@@ -234,4 +308,3 @@ if __name__ == "__main__":
     # Global distribution of the data
     data_exploration = DataStatistics(DATA_PATH, 'EXIST2023_training-dev.csv', ANALYSES_PATH)
     data_exploration.statistic_significances()
-    exit()
