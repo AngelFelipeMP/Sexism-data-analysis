@@ -10,6 +10,8 @@ predictions/
 output_examples/
 copy_preditions/
 json_predictions/
+pred*
+analyzes_ZeroPrompt/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

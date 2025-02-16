@@ -25,7 +25,7 @@ CATEGORIES_TASK3 = ['IDEOLOGICAL AND INEQUALITY',
 AGE_GROUPS = ['18-22', '23-45', '46+']
 GENDER_GROUPS = ['female', 'male']
 
-LLMS = ["gpt-3.5-turbo-0125", "gpt-4-turbo-2024-04-09", "gpt-4o-2024-08-06"]
+LLMS = ["gpt-3.5-turbo-0125", "gpt-4-turbo-2024-04-09", "gpt-4o-2024-08-06", "mistral", "qwen"]
 PROMPTS = ["ZeroShotTask1", "ZeroShotTask2", "ZeroShotTask3"]
 
 API_KEY = 'AZURE_OPENAI_KEY' #'OPENAI_KEY'
@@ -34,4 +34,5 @@ API_PROVIDER = 'AZURE' #'OPENAI'
 
 # AZURE_ENDPOINT = 'https://angelsachinopenai.openai.azure.com/'
 AZURE_ENDPOINT = 'https://angel-m4up853w-eastus2.cognitiveservices.azure.com/'
-AZURE_API_VERSION = '2024-08-01-preview'
+AZURE_API_VERSION = '2024-12-01-preview'
+# AZURE_API_VERSION = '2024-08-01-preview'

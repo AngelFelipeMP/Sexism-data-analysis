@@ -120,14 +120,16 @@ class DataStatistics(DataExploration):
                 if labels1 == labels2:
                     alpha_value = 1
                 else:
-                    # #DEBUG:
-                    # print('@@@@@ DEBUG @@@@')
-                    # print(col1)
-                    # print(type(labels1))
-                    # print(len(labels1))
-                    # print(col2)
-                    # print(type(labels2))
-                    # print(len(labels2))
+                    #DEBUG:
+                    print('@@@@@ DEBUG @@@@')
+                    print(col1)
+                    print(type(labels1))
+                    print(len(labels1))
+                    print(labels1[0])
+                    print(col2)
+                    print(type(labels2))
+                    print(len(labels2))
+                    print(labels2[0])
                     
                     alpha_value = krippendorff.alpha([labels1, labels2], level_of_measurement=level_of_measurement)
                 
@@ -143,7 +145,7 @@ class DataStatistics(DataExploration):
                 
                 # calculate confidence interval for alpha matrix
                 # if col1 != col2:
-                ci_lower, ci_upper = self.confidence_interval_krippendorff_alpha(level_of_measurement, labels1, labels2, n_resamples=10000)
+                ci_lower, ci_upper = self.confidence_interval_krippendorff_alpha(level_of_measurement, labels1, labels2, n_resamples=10)
                 # else:
                 #     ci_lower, ci_upper = 0, 0
                 

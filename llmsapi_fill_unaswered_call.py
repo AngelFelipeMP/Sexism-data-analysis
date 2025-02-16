@@ -56,7 +56,8 @@ class llmsAPI(OpenAIAPI, MistralAPI):
         self.prompt = prompt
         self.user_role = "user"
         self.llm_role = "system"
-        self.llm_persona = "You are an expert on understanding sexism in social media texts."
+        # self.llm_persona = "You are an expert on understanding sexism in social media texts."
+        self.llm_persona = ""
         
     def get_completation(self, llm, temperature, max_tokens):
         if llm in self.openai_llms:

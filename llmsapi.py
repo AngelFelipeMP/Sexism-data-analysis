@@ -21,7 +21,7 @@ else:
 class OpenAIAPI:
     def __init__(self):
         # self.openai_llms = ["gpt-3.5-turbo-0125", "gpt-4-turbo", "gpt-4o-2024-05-13"]
-        self.openai_llms = ["gpt-3.5-turbo-0125", "gpt-4-turbo-2024-04-09", "gpt-4o-2024-08-06"]
+        self.openai_llms = ["gpt-3.5-turbo-0125", "gpt-4-turbo-2024-04-09", "gpt-4o-2024-08-06", "o1"]
         
     def get_completion(self, llm, temperature=0, max_tokens=10):
         try:
@@ -32,9 +32,11 @@ class OpenAIAPI:
                     {"role": self.user_role, "content": self.prompt}],
                 temperature=temperature,  # this is the degree of randomness of the model's output
                 max_tokens=max_tokens,
+                # max_completion_tokens=max_tokens, #COMMENT: uncomment for o1
                 top_p=1,
                 seed=42
             )
+            
             return response.choices[0].message.content
         except Exception as e:
             logging.error(f"An error occurred during the OpenAI API call: {e}")
@@ -54,7 +56,7 @@ class llmsAPI(OpenAIAPI, MistralAPI):
         self.prompt = prompt
         self.user_role = "user"
         self.llm_role = "system"
-        self.llm_persona = "You are an expert on understanding sexism in social media texts."
+        self.llm_persona = ""
         
     def get_completation(self, llm, temperature, max_tokens):
         if llm in self.openai_llms:

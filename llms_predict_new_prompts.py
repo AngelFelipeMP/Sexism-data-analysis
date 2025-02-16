@@ -1,10 +1,8 @@
 import pandas as pd
-# from llmsapi import llmsAPI
-from llmsapi_fill_unaswered_call import llmsAPI
+from llmsapi import llmsAPI
 import logging
 from icecream import ic
-# from config import *
-from config_fill_unaswered_calls import *
+from config import *
 from tqdm import tqdm
 import time
 
@@ -65,6 +63,76 @@ class PROMPT:
         TWEET: {tweet}'''.format(tweet=tweet, demographic_info=demographic_info)
         
         
+        
+    def ZeroShotTask1_VersionZero(self, tweet, gender, age):
+        if gender and age:
+            demographic_info = f''' from the perspective of a {gender} aged {age}'''
+        elif gender:
+            demographic_info = f''' from a {gender}'s perspective'''
+        elif age:
+            demographic_info = f''' from the perspective of someone aged {age} years old'''
+        else:
+            demographic_info = ''
+        
+        line1 = '''The system's primary task is determining whether a tweet contains sexist expressions or behaviours (i.e., a tweet is sexist itself, describes a sexist situation, or criticises sexist behaviour){demographic_info}.''' 
+        line2 = '''The system must retrieve YES if the TWEET below contains sexist expressions or behaviours and retrieve NO otherwise. The system must not retrieve text apart from the two possible categories, YES and NO.'''
+        line3 = '''TWEET: {tweet}'''
+        
+        return f"{line1} {line2} \n\n {line3}".format(tweet=tweet, demographic_info=demographic_info)
+    
+    def ZeroShotTask1_AdpatAlister(self, tweet, gender, age):
+        if gender and age:
+            demographic_info_1 = f''' from the perspective of a {gender} person aged {gender} reading the tweet'''
+            demographic_info_2 = f''' a male person aged 18-22 reading'''
+            demographic_info_3 = f''' would feel that it'''
+        elif gender:
+            demographic_info_1 = f''' from the perspective of a {gender} person reading the tweet'''
+            demographic_info_2 = f''' a {gender} person reading'''
+            demographic_info_3 = f''' would feel that it'''
+            
+        elif age:
+            demographic_info_1 = f''' from the perspective of a person aged {age} reading the tweet'''
+            demographic_info_2 = f''' a person aged {age} reading'''
+            demographic_info_3 = f''' would feel that it'''
+        else:
+            demographic_info_1 = ''
+            demographic_info_2 = ''
+            demographic_info_3 = ''
+
+        line1 = ''''Your task is to identify whether a tweet is sexist itself, describes a sexist situation, or criticises sexist behaviour{demographic_info_1}.'''
+        line2 = '''You should reply YES if{demographic_info_2} the TWEET below{demographic_info_3} contains sexist expressions or behaviours and reply NO otherwise.'''
+        line3 = '''You must not retrieve text apart from the two possible categories, YES and NO.'''
+        line4 = '''TWEET: {tweet}'''
+        return f"{line1} {line2} {line3} \n\n {line4}".format(tweet=tweet, demographic_info_1=demographic_info_1, demographic_info_2=demographic_info_2, demographic_info_3=demographic_info_3)
+    
+    def ZeroShotTask1_Johanne(self, tweet, gender, age):
+        if gender and age:
+            demographic_info_1 = f''' a {gender}'''
+            demographic_info_2 = f''', aged {age}'''
+        elif gender:
+            demographic_info_1 = f''' a {gender}'''
+            demographic_info_2 = ''
+        elif age:
+            demographic_info_1 = f''' an'''
+            demographic_info_2 = f''', aged {age}'''
+        else:
+            demographic_info_1 = f''' an'''
+            demographic_info_2 = ''
+
+        line1 = '''You are{demographic_info_1} expert in identifying sexism in social media content{demographic_info_2}.'''
+        line2 = '''You need to evaluate if a tweet contains sexist expressions or behaviours. These could include:'''
+        line3 = '''- Directly sexist tweets'''
+        line4 = '''- Tweets that describe a sexist situation'''
+        line5 = '''- Tweets that criticize sexist behaviour'''
+        line6 = '''Classify each tweet into one of two categories:'''
+        line7 = '''-YES: The tweet contains sexist expressions, describes sexism, or references sexist behaviours.'''
+        line8 = '''-NO: The tweet does not contain any sexist expressions or behaviours.'''
+        line9 = '''Give your classification with only YES or NO for each tweet.'''
+        line10 = '''You must not retrieve text apart from the two possible categories, YES and NO.'''
+        line11 = '''TWEET: {tweet}'''
+        
+        return f"{line1} \n\n {line2} \n {line3} \n {line4} \n {line5} \n\n {line6} \n {line7} \n {line8} \n\n {line9} \n {line10} \n\n {line11}".format(tweet=tweet, demographic_info_1=demographic_info_1, demographic_info_2=demographic_info_2)
+    
     def ZeroShotTask1_o1_Preview(self, tweet, gender, age):
         if gender and age:
             demographic_info = f''' Your demographic information is as follows: \n - Sex: {gender} \n - Age Group: {age}'''
@@ -93,6 +161,7 @@ class PROMPT:
 
         return f"{line1} \n\n {line2} \n {line3} \n {line4} \n {line5} \n\n {line6} \n {line7} \n {line8} \n {line9} \n {line10} \n {line11} \n {line12} \n {line13} \n\n {line14}".format(tweet=tweet, demographic_info=demographic_info)
         
+        
     
     def get_prompt(self, prompt_type, tweet, gender, age):
         if prompt_type == "ZeroShotTask1_VersionZero":
@@ -117,23 +186,8 @@ class DATA:
                                 usecols=columns,
                                 index_col='id_EXIST')
         
-        self.df_preds = pd.read_csv(PREDICTIONS_PATH + '/' + self.model + '_' + self.gender + '_' + self.age + '_' + self.prompt_type + '.tsv', sep='\t', index_col='id_EXIST')
-        df_no_answered = self.df_preds.loc[(self.df_preds[self.model] == 'FILTERED') | (self.df_preds[self.model].isna())]
-        self.df_data = self.df_data.loc[df_no_answered.index.tolist()]
-        
-        # #DEBUG:
-        # print('\n')
-        # print('######### DATA #########')
-        # print(len(self.df_preds))
-        # print(self.df_preds.head())
-        # print(len(df_no_answered))
-        # print(df_no_answered.head())
-        # print(len(self.df_data))
-        # print(self.df_data.tail())
-        # print('######### DATA #########')
-        # exit()
-        
-        # #DEBUG:
+        #DEBUG:
+        # self.df_data = self.df_data.sample(n=20, random_state=1)
         # self.df_data = self.df_data.head(10)
         # self.df_data = self.df_data.loc[[100025,100107,100111,100115,100123]]
         
@@ -161,7 +215,7 @@ class DATA:
     
 
 class ChatLLM(DATA, PROMPT):
-    def __init__(self, model, prompt_type, gender, age, demographics_text, max_tokens=50):
+    def __init__(self, model, prompt_type, gender, age, demographics_text='', max_tokens=50):
         super().__init__()
         self.prompt_type = prompt_type
         self.model = model
@@ -178,10 +232,10 @@ class ChatLLM(DATA, PROMPT):
             tweet = self.df_data.iloc[i]['tweet']
             prompt = super().get_prompt(self.prompt_type, tweet, self.gender, self.age)
             
-            # #DEBUG:
+            #DEBUG:
             # tqdm.write('\n')
             # tqdm.write(prompt)
-            # exit()
+            # exit() 
             
             llms_api = llmsAPI(prompt)
             
@@ -217,15 +271,7 @@ class ChatLLM(DATA, PROMPT):
         
         
     def save_predictions(self):
-        # self.df_data.loc[:,['lang', self.model]].to_csv(PREDICTIONS_PATH + '/' + self.model + '_' + self.gender + '_' + self.age + '_' + self.prompt_type + '.tsv', sep='\t')
-        self.df_preds.dropna(subset=[self.model], inplace=True)
-        self.df_preds.drop(labels=self.df_preds.loc[self.df_preds[self.model] == 'FILTERED'].index, axis=0, inplace=True)
-        
-        self.df_all_preds = pd.concat([self.df_data, self.df_preds], axis=0)
-        self.df_all_preds.sort_index(inplace=True)
-        
-        self.df_all_preds.loc[:,['lang', self.model]].to_csv(PREDICTIONS_PATH + '/' + self.model + '_' + self.gender + '_' + self.age + '_' + self.prompt_type + '.tsv', sep='\t')
-        
+        self.df_data.loc[:,['lang', self.model]].to_csv(PREDICTIONS_PATH + '/' + self.model + '_' + self.gender + '_' + self.age + '_' + self.prompt_type + '.tsv', sep='\t')
     
     def main(self):
         super().load_data()
@@ -257,9 +303,6 @@ if __name__ == '__main__':
                                 age=age,
                                 max_tokens=50)
                     LlmPreds.main()
-        
-
-
 
 
     #DEBUG:
